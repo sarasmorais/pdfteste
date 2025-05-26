@@ -979,7 +979,7 @@
             }
 
             // FUNÇÃO generatePDF COM VISUAL LIMPO E COLUNAS LADO A LADO
-     async function generatePDF(formDataObj) {
+async function generatePDF(formDataObj) {
     try {
         const jsPDFNamespace = await loadJsPDF();
         const { jsPDF } = jsPDFNamespace;
@@ -1014,91 +1014,87 @@
         doc.setFont("helvetica", "italic");
         doc.text("Obrigado por confirmar sua presença em nosso grande dia", centerX, currentY, { align: "center" });
 
-        currentY += 35;
+        currentY += 30;
 
-        // Nomes dos noivos
-        doc.setFontSize(26);
+        // Nomes dos noivos em uma só linha
+        doc.setFontSize(24);
         doc.setTextColor(...textColor);
         doc.setFont("times", "normal");
-        doc.text("Lívia", centerX, currentY, { align: "center" });
+        doc.text("Lívia ", centerX - 20, currentY, { align: "right" });
 
-        currentY += 12;
-        doc.setFontSize(18);
-        doc.setTextColor(...roseDark);
         doc.setFont("times", "italic");
+        doc.setTextColor(...roseDark);
         doc.text("&", centerX, currentY, { align: "center" });
 
-        currentY += 15;
-        doc.setFontSize(26);
-        doc.setTextColor(...textColor);
         doc.setFont("times", "normal");
-        doc.text("Mateus", centerX, currentY, { align: "center" });
+        doc.setTextColor(...textColor);
+        doc.text(" Mateus", centerX + 20, currentY, { align: "left" });
 
-        currentY += 18;
+        currentY += 15;
+
+        // Linha decorativa
         doc.setDrawColor(...rosePastel);
         doc.setLineWidth(0.8);
         doc.line(centerX - 30, currentY, centerX + 30, currentY);
 
         currentY += 20;
 
-        // INFORMAÇÕES VERTICAIS
-        const startX = margin;
-        let y = currentY;
+        // POSICIONAMENTO EM DUAS COLUNAS
+        const leftX = margin;
+        const rightX = pageWidth / 2 + 5;
+        let infoY = currentY;
 
-        // Função auxiliar para escrever "rótulo: valor" com espaçamento ajustado
-        function writeField(label, value) {
-            doc.setFont("helvetica", "bold");
-            doc.setTextColor(...textColor);
-            doc.text(label, startX, y);
-
-            const labelWidth = doc.getTextWidth(label);
-            doc.setFont("helvetica", "normal");
-            doc.text(String(value), startX + labelWidth + 2, y);
-
-            y += 10;
-        }
-
-        // DADOS DO CONVIDADO
         doc.setFontSize(10);
         doc.setFont("helvetica", "bold");
         doc.setTextColor(...textColor);
-        doc.text("DADOS DO CONVIDADO", startX, y);
-        y += 10;
+        doc.text("DADOS DO CONVIDADO", leftX, infoY);
+        doc.text("DETALHES DO EVENTO", rightX, infoY);
+
+        infoY += 10;
         doc.setFontSize(8);
+        doc.setFont("helvetica", "normal");
 
-        writeField("Nome:", formDataObj.nome || "N/A");
-        writeField("Email:", formDataObj.email || "N/A");
-        writeField("Telefone:", formDataObj.telefone || "N/A");
-        writeField("Acompanhantes:", formDataObj.acompanhantes === "0" ? "Apenas eu" : `${formDataObj.acompanhantes || '0'} pessoa(s)`);
+        // Função auxiliar para cada lado
+        function writeField(x, y, label, value) {
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(...textColor);
+            doc.text(label, x, y);
+            const labelWidth = doc.getTextWidth(label);
+            doc.setFont("helvetica", "normal");
+            doc.text(String(value), x + labelWidth + 2, y);
+        }
 
-        y += 10;
+        // ESQUERDA – DADOS DO CONVIDADO
+        writeField(leftX, infoY, "Nome:", formDataObj.nome || "N/A");
+        writeField(rightX, infoY, "Data:", "20/07/2025");
+        infoY += 10;
 
-        // DETALHES DO EVENTO
-        doc.setFontSize(10);
-        doc.setFont("helvetica", "bold");
-        doc.text("DETALHES DO EVENTO", startX, y);
-        y += 10;
-        doc.setFontSize(8);
+        writeField(leftX, infoY, "Email:", formDataObj.email || "N/A");
+        writeField(rightX, infoY, "Horário:", "16h");
+        infoY += 10;
 
-        writeField("Data:", "20/07/2025");
-        writeField("Horário:", "16h");
-        writeField("Local:", "Espaço Jardim das Flores");
-        writeField("Endereço:", "Rua das Flores, 123 - Jardim Primavera");
+        writeField(leftX, infoY, "Telefone:", formDataObj.telefone || "N/A");
+        writeField(rightX, infoY, "Local:", "Espaço Jardim das Flores");
+        infoY += 10;
 
-        y += 10;
+        const acompText = formDataObj.acompanhantes === "0" ? "Apenas eu" : `${formDataObj.acompanhantes || '0'} pessoa(s)`;
+        writeField(leftX, infoY, "Acompanhantes:", acompText);
+        writeField(rightX, infoY, "Endereço:", "Rua das Flores, 123 - Jardim Primavera");
 
-        // Mensagem (se houver)
+        infoY += 15;
+
+        // MENSAGEM (opcional)
         if (formDataObj.mensagem && formDataObj.mensagem.trim() !== "") {
             doc.setFont("helvetica", "bold");
             doc.setTextColor(...roseDark);
-            doc.text("Mensagem:", startX, y);
+            doc.text("Mensagem:", leftX, infoY);
 
-            y += 6;
+            infoY += 6;
             doc.setFontSize(7);
             doc.setFont("helvetica", "normal");
             doc.setTextColor(...textColor);
             const msgLines = doc.splitTextToSize(String(formDataObj.mensagem), pageWidth - margin * 2);
-            doc.text(msgLines, startX + 10, y);
+            doc.text(msgLines, leftX + 10, infoY);
         }
 
         // Rodapé
@@ -1117,7 +1113,7 @@
         doc.setFont("helvetica", "normal");
         doc.text("20 de Julho de 2025", centerX, footerY + 6, { align: "center" });
 
-        console.log("PDF elegante gerado com sucesso!");
+        // Gerar arquivo
         const safeGuestName = String(formDataObj.nome || "Convidado").replace(/[^\w\sÀ-ú]/gi, '').replace(/\s+/g, "_");
         const fileName = `Convite_Casamento_Julia_Pedro_${safeGuestName}.pdf`;
         doc.save(fileName);
@@ -1129,6 +1125,7 @@
         throw error;
     }
 }
+
 
             const rsvpForm = document.getElementById("rsvp-form");
             const thankYouMessageContainer = document.getElementById("thank-you-message");
