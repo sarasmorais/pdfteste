@@ -310,16 +310,15 @@
             document.head.appendChild(script2);
         }
 
-        // #####################################################################
-        // ############### FUNÇÃO generatePDF REVISADA (v3) ####################
-        // #####################################################################
+        // FUNÇÃO generatePDF CORRIGIDA
         async function generatePDF(formDataObj) {
             try {
-                console.log("Dados recebidos para PDF:", formDataObj); // Para depuração
+                console.log("Dados recebidos para PDF:", formDataObj);
                 const jsPDFNamespace = await loadJsPDF();
                 const { jsPDF } = jsPDFNamespace;
                 const doc = new jsPDF(); 
 
+                // Cores
                 const primaryColor = [232, 180, 184]; 
                 const primaryDark = [212, 145, 154];  
                 const textColor = [74, 59, 60];       
@@ -332,226 +331,211 @@
                 const pageHeight = doc.internal.pageSize.getHeight();
                 const margin = 15;
                 const contentWidth = pageWidth - (margin * 2);
-                let currentY = 0; 
 
+                // Fundo da página
                 doc.setFillColor(...bgColor);
                 doc.rect(0, 0, pageWidth, pageHeight, "F");
 
+                let currentY = 0;
+
+                // CABEÇALHO
                 doc.setFillColor(...primaryDark); 
-                doc.rect(0, 0, pageWidth, 30, "F");
-                currentY = 18; 
-                doc.setFontSize(28); 
+                doc.rect(0, 0, pageWidth, 35, "F");
+                
+                currentY = 22;
+                doc.setFontSize(24); 
                 doc.setTextColor(...whiteColor);
                 doc.setFont("helvetica", "bold");
                 doc.text("Lívia & Mateus", pageWidth / 2, currentY, { align: "center" });
                 
-                currentY = 30 + 15; 
-                doc.setFontSize(16);
+                currentY = 50;
+                doc.setFontSize(14);
                 doc.setTextColor(...countdownColor); 
                 doc.setFont("helvetica", "italic");
                 doc.text("Você está convidado para celebrar conosco!", pageWidth / 2, currentY, { align: "center" });
-                currentY += 18;
-                doc.setFontSize(22);
+                
+                currentY += 15;
+                doc.setFontSize(18);
                 doc.setTextColor(...primaryDark);
                 doc.setFont("helvetica", "bold");
                 doc.text("30 de Outubro de 2025", pageWidth / 2, currentY, { align: "center" });
-                currentY += 15;
+                
+                currentY += 10;
                 doc.setDrawColor(...primaryColor);
                 doc.setLineWidth(1);
                 doc.line(margin + 50, currentY, pageWidth - margin - 50, currentY);
-                currentY += 20;
+                
+                currentY += 25;
 
-                doc.setFontSize(20);
+                // TÍTULO DA CONFIRMAÇÃO
+                doc.setFontSize(16);
                 doc.setTextColor(...countdownColor);
                 doc.setFont("helvetica", "bold");
                 doc.text("Confirmação de Presença Recebida", pageWidth / 2, currentY, { align: "center" });
-                currentY += 15;
-
-                // --- Seção 8: Informações do Convidado ---
-                const guestBoxTopY = currentY;
-                const guestPaddingTop = 12;
-                const guestPaddingBottom = 10;
-                const guestContentStartX = margin + 10; // X para início do conteúdo da caixa
-                const guestLabelX = guestContentStartX;
-                const guestValueX = guestContentStartX + 60; // Aumentar para mais espaço para o rótulo
-                const guestLineItemRenderHeight = 10; // Altura efetiva de uma linha de texto
-                const guestInterItemSpace = 6;  // Espaço vertical entre itens (Nome -> Email)
-
-                // Função auxiliar para calcular altura de texto multilinhas
-                function getTextHeight(docInstance, text, maxWidth, fontSize, fontName, fontStyle) {
-                    if (!text || String(text).trim() === "") return 0;
-                    const oldSize = docInstance.getFontSize();
-                    const oldFont = docInstance.getFont();
-                    docInstance.setFontSize(fontSize).setFont(fontName, fontStyle);
-                    const lines = docInstance.splitTextToSize(String(text), maxWidth);
-                    const height = lines.length * (fontSize * 0.7); // Multiplicador ajustado
-                    docInstance.setFontSize(oldSize).setFont(oldFont.fontName, oldFont.fontStyle);
-                    return height;
-                }
                 
-                let calculatedGuestContentInnerHeight = guestPaddingTop;
-                calculatedGuestContentInnerHeight += guestLineItemRenderHeight + guestInterItemSpace; // Nome
-                calculatedGuestContentInnerHeight += guestLineItemRenderHeight + guestInterItemSpace; // Email
-                calculatedGuestContentInnerHeight += guestLineItemRenderHeight + guestInterItemSpace; // Telefone
-                calculatedGuestContentInnerHeight += guestLineItemRenderHeight + guestInterItemSpace; // Acompanhantes
-                
-                const msgForCalc = String(formDataObj.mensagem || "");
-                const msgMaxWidth = contentWidth - (guestValueX - margin) - 10; // Largura para o texto da mensagem
-                const msgActualHeight = getTextHeight(doc, msgForCalc, msgMaxWidth, 11, "helvetica", "normal");
+                currentY += 20;
 
-                if (msgActualHeight > 0) {
-                    calculatedGuestContentInnerHeight += guestLineItemRenderHeight + guestInterItemSpace; // Label da Mensagem
-                    calculatedGuestContentInnerHeight += msgActualHeight + guestInterItemSpace; 
-                }
-                calculatedGuestContentInnerHeight += guestPaddingBottom;
-                const guestBoxTotalHeight = Math.max(calculatedGuestContentInnerHeight, 60); // Altura mínima
-
+                // CAIXA DE INFORMAÇÕES DO CONVIDADO
+                const boxHeight = 70;
                 doc.setFillColor(...whiteColor);
                 doc.setDrawColor(...primaryColor);
                 doc.setLineWidth(0.5);
-                doc.roundedRect(margin, guestBoxTopY, contentWidth, guestBoxTotalHeight, 3, 3, "FD");
+                doc.roundedRect(margin, currentY, contentWidth, boxHeight, 3, 3, "FD");
 
-                let guestTextY = guestBoxTopY + guestPaddingTop + (guestLineItemRenderHeight * 0.85); // Ajuste para baseline
+                let textY = currentY + 15;
+                const labelX = margin + 15;
+                const valueX = margin + 70;
 
-                doc.setFontSize(12);
-                doc.setFont("helvetica", "bold"); doc.setTextColor(...primaryDark);
-                doc.text("Convidado:", guestLabelX, guestTextY);
-                doc.setFont("helvetica", "normal"); doc.setTextColor(...textColor);
-                doc.text(String(formDataObj.nome || "N/A"), guestValueX, guestTextY);
-                guestTextY += guestLineItemRenderHeight + guestInterItemSpace;
+                // Nome
+                doc.setFontSize(11);
+                doc.setFont("helvetica", "bold"); 
+                doc.setTextColor(...primaryDark);
+                doc.text("Convidado:", labelX, textY);
+                doc.setFont("helvetica", "normal"); 
+                doc.setTextColor(...textColor);
+                doc.text(String(formDataObj.nome || "N/A"), valueX, textY);
+                
+                textY += 12;
 
-                doc.setFont("helvetica", "bold"); doc.setTextColor(...primaryDark);
-                doc.text("Email:", guestLabelX, guestTextY);
-                doc.setFont("helvetica", "normal"); doc.setTextColor(...textColor);
-                doc.text(String(formDataObj.email || "N/A"), guestValueX, guestTextY);
-                guestTextY += guestLineItemRenderHeight + guestInterItemSpace;
+                // Email
+                doc.setFont("helvetica", "bold"); 
+                doc.setTextColor(...primaryDark);
+                doc.text("Email:", labelX, textY);
+                doc.setFont("helvetica", "normal"); 
+                doc.setTextColor(...textColor);
+                doc.text(String(formDataObj.email || "N/A"), valueX, textY);
+                
+                textY += 12;
 
-                doc.setFont("helvetica", "bold"); doc.setTextColor(...primaryDark);
-                doc.text("Telefone:", guestLabelX, guestTextY);
-                doc.setFont("helvetica", "normal"); doc.setTextColor(...textColor);
-                doc.text(String(formDataObj.telefone || "N/A"), guestValueX, guestTextY);
-                guestTextY += guestLineItemRenderHeight + guestInterItemSpace;
+                // Telefone
+                doc.setFont("helvetica", "bold"); 
+                doc.setTextColor(...primaryDark);
+                doc.text("Telefone:", labelX, textY);
+                doc.setFont("helvetica", "normal"); 
+                doc.setTextColor(...textColor);
+                doc.text(String(formDataObj.telefone || "N/A"), valueX, textY);
+                
+                textY += 12;
 
-                doc.setFont("helvetica", "bold"); doc.setTextColor(...primaryDark);
-                doc.text("Acompanhantes:", guestLabelX, guestTextY);
-                doc.setFont("helvetica", "normal"); doc.setTextColor(...textColor);
-                const acompanhantesTextForPDF = formDataObj.acompanhantes === "0" ? "Apenas eu" : `${formDataObj.acompanhantes || '0'} pessoa(s)`;
-                doc.text(acompanhantesTextForPDF, guestValueX, guestTextY); // Removido +10 extra
-                guestTextY += guestLineItemRenderHeight + guestInterItemSpace;
+                // Acompanhantes
+                doc.setFont("helvetica", "bold"); 
+                doc.setTextColor(...primaryDark);
+                doc.text("Acompanhantes:", labelX, textY);
+                doc.setFont("helvetica", "normal"); 
+                doc.setTextColor(...textColor);
+                const acompanhantesText = formDataObj.acompanhantes === "0" ? "Apenas eu" : `${formDataObj.acompanhantes || '0'} pessoa(s)`;
+                doc.text(acompanhantesText, valueX, textY);
 
-                if (msgActualHeight > 0) {
-                    doc.setFontSize(12); doc.setFont("helvetica", "bold"); doc.setTextColor(...primaryDark);
-                    doc.text("Mensagem:", guestLabelX, guestTextY);
-                    guestTextY += guestLineItemRenderHeight + guestInterItemSpace - 5; // Ajustar Y para o valor da mensagem
+                // Mensagem (se houver)
+                if (formDataObj.mensagem && formDataObj.mensagem.trim() !== "") {
+                    textY += 12;
+                    doc.setFont("helvetica", "bold"); 
+                    doc.setTextColor(...primaryDark);
+                    doc.text("Mensagem:", labelX, textY);
                     
-                    doc.setFontSize(11); doc.setFont("helvetica", "normal"); doc.setTextColor(...textColor);
-                    const messageLines = doc.splitTextToSize(msgForCalc, msgMaxWidth);
-                    doc.text(messageLines, guestValueX, guestTextY);
+                    textY += 8;
+                    doc.setFontSize(10);
+                    doc.setFont("helvetica", "normal"); 
+                    doc.setTextColor(...textColor);
+                    const messageLines = doc.splitTextToSize(String(formDataObj.mensagem), contentWidth - 80);
+                    doc.text(messageLines, valueX, textY);
                 }
-                currentY = guestBoxTopY + guestBoxTotalHeight + 18;
 
-                // --- Seção 9: Detalhes do Evento ---
-                const eventBoxTopY = currentY;
-                const eventPaddingTop = 15;
-                const eventPaddingBottom = 10;
-                const eventTitleFontSize = 18;
-                const eventLineItemHeight = 10; // Altura para cada linha de Data, Local, etc.
-                const eventInterItemSpace = 5;
-                const eventDetailsFontSize = 11;
+                currentY += boxHeight + 25;
 
-                let calculatedEventInnerHeight = eventPaddingTop;
-                calculatedEventInnerHeight += getTextHeight(doc, "Detalhes do Evento", contentWidth, eventTitleFontSize, "helvetica", "bold") + eventInterItemSpace; // Título
-                calculatedEventInnerHeight += 2 + eventInterItemSpace; // Linha decorativa e espaço
-                
-                // Linha 1 (Data, Local)
-                calculatedEventInnerHeight += eventLineItemHeight + eventInterItemSpace;
-                // Linha 2 (Horário, Endereço)
-                const endText = "Rua das Flores, 123 - Jardim Primavera";
-                const endMaxWidth = contentWidth / 2 - 20; // Largura para o texto do endereço
-                const endActualHeight = getTextHeight(doc, endText, endMaxWidth, eventDetailsFontSize, "helvetica", "normal");
-                calculatedEventInnerHeight += Math.max(eventLineItemHeight, endActualHeight) + eventInterItemSpace;
-                calculatedEventInnerHeight += eventPaddingBottom;
-                const eventBoxTotalHeight = Math.max(calculatedEventInnerHeight, 75);
-
+                // DETALHES DO EVENTO
+                const eventBoxHeight = 65;
                 doc.setFillColor(...accentColor);
-                doc.setDrawColor(...primaryColor); doc.setLineWidth(1);
-                doc.roundedRect(margin, eventBoxTopY, contentWidth, eventBoxTotalHeight, 4, 4, "FD");
+                doc.setDrawColor(...primaryColor); 
+                doc.setLineWidth(1);
+                doc.roundedRect(margin, currentY, contentWidth, eventBoxHeight, 4, 4, "FD");
 
-                let eventTextY = eventBoxTopY + eventPaddingTop;
-                doc.setFontSize(eventTitleFontSize); doc.setTextColor(...countdownColor); doc.setFont("helvetica", "bold");
-                doc.text("Detalhes do Evento", pageWidth / 2, eventTextY + (eventTitleFontSize*0.7), { align: "center" });
-                eventTextY += getTextHeight(doc, "Detalhes do Evento", contentWidth, eventTitleFontSize, "helvetica", "bold") + eventInterItemSpace;
+                let eventY = currentY + 15;
+                doc.setFontSize(16); 
+                doc.setTextColor(...countdownColor); 
+                doc.setFont("helvetica", "bold");
+                doc.text("Detalhes do Evento", pageWidth / 2, eventY, { align: "center" });
                 
-                doc.setDrawColor(...primaryColor); doc.setLineWidth(0.5);
-                doc.line(pageWidth / 2 - 40, eventTextY, pageWidth / 2 + 40, eventTextY);
-                eventTextY += 2 + eventInterItemSpace + (eventLineItemHeight*0.85);
-
-                const eventCol1X_label = margin + 10;
-                const eventCol1X_value = eventCol1X_label + 35; 
-                const eventCol2X_label = pageWidth / 2 + 5;
-                const eventCol2X_value = eventCol2X_label + 45; 
-
-                doc.setFontSize(eventDetailsFontSize);
-                // Linha 1 de Detalhes
-                doc.setFont("helvetica", "bold"); doc.setTextColor(...primaryDark);
-                doc.text("Data:", eventCol1X_label, eventTextY);
-                doc.setFont("helvetica", "normal"); doc.setTextColor(...textColor);
-                doc.text("30 de Outubro de 2025", eventCol1X_value, eventTextY);
-
-                doc.setFont("helvetica", "bold"); doc.setTextColor(...primaryDark);
-                doc.text("Local:", eventCol2X_label, eventTextY);
-                doc.setFont("helvetica", "normal"); doc.setTextColor(...textColor);
-                doc.text("Espaço Jardim das Flores", eventCol2X_value, eventTextY);
-                eventTextY += eventLineItemHeight + eventInterItemSpace;
-
-                // Linha 2 de Detalhes
-                doc.setFont("helvetica", "bold"); doc.setTextColor(...primaryDark);
-                doc.text("Horário:", eventCol1X_label, eventTextY);
-                doc.setFont("helvetica", "normal"); doc.setTextColor(...textColor);
-                doc.text("16:00", eventCol1X_value, eventTextY);
+                eventY += 8;
+                doc.setDrawColor(...primaryColor); 
+                doc.setLineWidth(0.5);
+                doc.line(pageWidth / 2 - 30, eventY, pageWidth / 2 + 30, eventY);
                 
-                doc.setFont("helvetica", "bold"); doc.setTextColor(...primaryDark);
-                doc.text("Endereço:", eventCol2X_label, eventTextY);
-                doc.setFont("helvetica", "normal"); doc.setTextColor(...textColor);
-                const addressLines = doc.splitTextToSize(endText, endMaxWidth);
-                doc.text(addressLines, eventCol2X_value, eventTextY);
-                
-                currentY = eventBoxTopY + eventBoxTotalHeight + 20;
+                eventY += 15;
 
-                // --- Mensagem Final ---
-                const finalMessageBoxHeight = 35;
-                if (currentY + finalMessageBoxHeight > pageHeight - (margin + 20)) {
-                    currentY = pageHeight - (margin + 20) - finalMessageBoxHeight - 5; 
-                }
+                // Primeira linha de detalhes
+                const col1X = margin + 15;
+                const col2X = pageWidth / 2 + 10;
+
+                doc.setFontSize(11);
+                doc.setFont("helvetica", "bold"); 
+                doc.setTextColor(...primaryDark);
+                doc.text("Data:", col1X, eventY);
+                doc.setFont("helvetica", "normal"); 
+                doc.setTextColor(...textColor);
+                doc.text("30 de Outubro de 2025", col1X + 25, eventY);
+
+                doc.setFont("helvetica", "bold"); 
+                doc.setTextColor(...primaryDark);
+                doc.text("Local:", col2X, eventY);
+                doc.setFont("helvetica", "normal"); 
+                doc.setTextColor(...textColor);
+                doc.text("Espaço Jardim das Flores", col2X + 25, eventY);
+
+                eventY += 12;
+
+                // Segunda linha de detalhes
+                doc.setFont("helvetica", "bold"); 
+                doc.setTextColor(...primaryDark);
+                doc.text("Horário:", col1X, eventY);
+                doc.setFont("helvetica", "normal"); 
+                doc.setTextColor(...textColor);
+                doc.text("16:00", col1X + 25, eventY);
+                
+                doc.setFont("helvetica", "bold"); 
+                doc.setTextColor(...primaryDark);
+                doc.text("Endereço:", col2X, eventY);
+                doc.setFont("helvetica", "normal"); 
+                doc.setTextColor(...textColor);
+                const addressLines = doc.splitTextToSize("Rua das Flores, 123 - Jardim Primavera", 80);
+                doc.text(addressLines, col2X + 25, eventY);
+
+                currentY += eventBoxHeight + 25;
+
+                // MENSAGEM FINAL
+                const finalBoxHeight = 30;
                 doc.setFillColor(...primaryColor);
-                doc.roundedRect(margin + 5, currentY, contentWidth - 10, finalMessageBoxHeight, 3, 3, "F");
-                doc.setFontSize(12); doc.setTextColor(...whiteColor); doc.setFont("helvetica", "italic");
-                doc.text("Agradecemos por confirmar sua presença!", pageWidth / 2, currentY + 10, { align: "center" });
+                doc.roundedRect(margin + 10, currentY, contentWidth - 20, finalBoxHeight, 3, 3, "F");
+                
+                doc.setFontSize(11); 
+                doc.setTextColor(...whiteColor); 
+                doc.setFont("helvetica", "italic");
+                doc.text("Agradecemos por confirmar sua presença!", pageWidth / 2, currentY + 12, { align: "center" });
                 doc.text("Estamos ansiosos para celebrar este momento com você.", pageWidth / 2, currentY + 22, { align: "center" });
                 
-                // --- Rodapé ---
-                const footerY = pageHeight - 18;
-                doc.setDrawColor(...primaryDark); doc.setLineWidth(0.5);
-                doc.line(margin, footerY, pageWidth - margin, footerY);
-                doc.setFontSize(9); doc.setTextColor(...primaryDark); doc.setFont("helvetica", "normal");
-                doc.text("Lívia & Mateus \u2764 30.10.2025", pageWidth / 2, footerY + 8, { align: "center" }); // Coração Unicode
+                // RODAPÉ
+                const footerY = pageHeight - 15;
+                doc.setDrawColor(...primaryDark); 
+                doc.setLineWidth(0.5);
+                doc.line(margin, footerY - 5, pageWidth - margin, footerY - 5);
                 
-                console.log("jsPDF: Geração do PDF concluída, tentando salvar...");
-                const safeGuestName = String(formDataObj.nome || "Convidado").replace(/[^\w\sÀ-ú]/gi, '').replace(/\s+/g, "_"); // Remove caracteres especiais, mantém acentos
+                doc.setFontSize(9); 
+                doc.setTextColor(...primaryDark); 
+                doc.setFont("helvetica", "normal");
+                doc.text("Lívia & Mateus ♥ 30.10.2025", pageWidth / 2, footerY, { align: "center" });
+                
+                console.log("PDF gerado com sucesso!");
+                const safeGuestName = String(formDataObj.nome || "Convidado").replace(/[^\w\sÀ-ú]/gi, '').replace(/\s+/g, "_");
                 const fileName = `Confirmacao_Casamento_Livia_e_Mateus_${safeGuestName}_30-10-2025.pdf`;
                 doc.save(fileName);
 
                 return true;
             } catch (error) {
-                console.error("Erro CRÍTICO ao gerar PDF:", error);
-                if (error.stack) console.error("Stack do erro:", error.stack);
-                alert("Ocorreu um erro crítico ao gerar o PDF. Por favor, verifique o console do navegador para mais detalhes e tente novamente.");
+                console.error("Erro ao gerar PDF:", error);
+                alert("Ocorreu um erro ao gerar o PDF. Por favor, tente novamente.");
                 throw error;
             }
         }
-        // #####################################################################
-        // ############# FIM DA FUNÇÃO generatePDF REVISADA ##################
-        // #####################################################################
 
         const rsvpForm = document.getElementById("rsvp-form");
         const thankYouMessageContainer = document.getElementById("thank-you-message"); 
@@ -601,7 +585,9 @@
                                 downloadButton.disabled = true;
                                 try {
                                     await generatePDF(formDataObj);
-                                } catch (error) { /* Erro já logado e alertado em generatePDF */ }
+                                } catch (error) { 
+                                    console.error("Erro no download do PDF:", error);
+                                }
                                 finally {
                                     downloadButton.textContent = originalDownloadText;
                                     downloadButton.disabled = false;
