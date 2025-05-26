@@ -978,7 +978,7 @@
                 document.head.appendChild(script2);
             }
 
-            // FUNÇÃO generatePDF COM CONSISTÊNCIA VISUAL
+            // FUNÇÃO generatePDF COM VISUAL LIMPO E COLUNAS LADO A LADO
             async function generatePDF(formDataObj) {
                 try {
                     console.log("Dados recebidos para PDF:", formDataObj);
@@ -986,26 +986,25 @@
                     const { jsPDF } = jsPDFNamespace;
                     const doc = new jsPDF();
 
-                    // Cores consistentes com o site - tons de rosa pastel
-                    const backgroundBeige = [245, 240, 235];     // Fundo bege claro
-                    const rosePastel = [250, 225, 228];          // Rosa pastel (accent-color do site)
-                    const roseDark = [194, 130, 133];            // Rosa escuro (countdown-color do site)
-                    const textColor = [74, 59, 60];              // Cor do texto principal do site
-                    const textLight = [138, 114, 117];           // Cor do texto secundário do site
-                    const softRose = [250, 225, 228];
+                    // Cores consistentes com o site
+                    const backgroundBeige = [245, 240, 235];
+                    const rosePastel = [250, 225, 228];
+                    const roseDark = [194, 130, 133];
+                    const textColor = [74, 59, 60];
+                    const textLight = [138, 114, 117];
 
                     const pageWidth = doc.internal.pageSize.getWidth();
                     const pageHeight = doc.internal.pageSize.getHeight();
                     const margin = 15;
                     const centerX = pageWidth / 2;
 
-                    // Fundo bege claro
+                    // Fundo
                     doc.setFillColor(...backgroundBeige);
                     doc.rect(0, 0, pageWidth, pageHeight, "F");
 
                     let currentY = 20;
 
-                    // TEXTO SUPERIOR - Fonte consistente
+                    // Cabeçalho
                     doc.setFontSize(7);
                     doc.setTextColor(...textLight);
                     doc.setFont("helvetica", "normal");
@@ -1016,185 +1015,117 @@
                     doc.setFont("helvetica", "italic");
                     doc.text("Obrigado por confirmar sua presença em nosso grande dia", centerX, currentY, { align: "center" });
 
-                    currentY += 20;
+                    currentY += 35;
 
-                    // SAVE THE DATE
-                    doc.setFontSize(10);
-                    doc.setTextColor(...textColor);
-                    doc.setFont("helvetica", "bold");
-
-
-                    currentY += 15;
-
-                    // NOMES DOS NOIVOS - Fonte Playfair Display simulada
+                    // Nomes
                     doc.setFontSize(26);
                     doc.setTextColor(...textColor);
                     doc.setFont("times", "normal");
                     doc.text("Lívia", centerX, currentY, { align: "center" });
 
                     currentY += 12;
-
-                    // Símbolo & 
                     doc.setFontSize(18);
                     doc.setTextColor(...roseDark);
                     doc.setFont("times", "italic");
                     doc.text("&", centerX, currentY, { align: "center" });
 
                     currentY += 15;
-
                     doc.setFontSize(26);
                     doc.setTextColor(...textColor);
                     doc.setFont("times", "normal");
                     doc.text("Mateus", centerX, currentY, { align: "center" });
 
                     currentY += 18;
-
-                    // Linha decorativa
                     doc.setDrawColor(...rosePastel);
                     doc.setLineWidth(0.8);
                     doc.line(centerX - 30, currentY, centerX + 30, currentY);
 
-                    currentY += 15;
+                    currentY += 20;
 
-                    // CONTAINERS LADO A LADO - Largura aumentada
-                    const containerY = currentY;
-                    const containerHeight = 80;
-                    const containerWidth = (pageWidth - (margin * 2.5)) / 2; // Largura aumentada
-                    const leftContainerX = margin;
-                    const rightContainerX = margin + containerWidth + (margin * 0.5);
+                    // COLUNAS DE INFORMAÇÕES
+                    const leftX = margin;
+                    const rightX = pageWidth / 2 + 5;
+                    let infoY = currentY;
 
-                    // CONTAINER ESQUERDO - DADOS DO CONVIDADO
-                    doc.setFillColor(...softRose);
-                    doc.setDrawColor(...roseDark);
-                    doc.setLineWidth(0.3);
-                    doc.roundedRect(leftContainerX, containerY, containerWidth, containerHeight, 5, 5, "FD");
-
-                    // Título da seção esquerda
-                    let leftTextY = containerY + 10;
                     doc.setFontSize(10);
-                    doc.setTextColor(...textColor);
                     doc.setFont("helvetica", "bold");
-                    doc.text("DADOS DO CONVIDADO", leftContainerX + (containerWidth / 2), leftTextY, { align: "center" });
-
-                    leftTextY += 12;
-
-                    // Dados do convidado - Fonte Poppins simulada
-                    const leftContentX = leftContainerX + 8;
-                    doc.setFontSize(8);
                     doc.setTextColor(...textColor);
+                    doc.text("DADOS DO CONVIDADO", leftX, infoY);
+                    doc.text("DETALHES DO EVENTO", rightX, infoY);
+
+                    infoY += 10;
+                    doc.setFontSize(8);
+                    doc.setFont("helvetica", "normal");
 
                     // Nome
                     doc.setFont("helvetica", "bold");
-                    doc.text("Nome:", leftContentX, leftTextY);
+                    doc.text("Nome:", leftX, infoY);
                     doc.setFont("helvetica", "normal");
-                    const nameLines = doc.splitTextToSize(String(formDataObj.nome || "N/A"), containerWidth - 35);
-                    doc.text(nameLines, leftContentX + 20, leftTextY);
+                    doc.text(String(formDataObj.nome || "N/A"), leftX + 30, infoY);
 
-                    leftTextY += 10;
+                    doc.setFont("helvetica", "bold");
+                    doc.text("Data:", rightX, infoY);
+                    doc.setFont("helvetica", "normal");
+                    doc.text("20/07/2025", rightX + 25, infoY);
+
+                    infoY += 10;
 
                     // Email
                     doc.setFont("helvetica", "bold");
-                    doc.text("Email:", leftContentX, leftTextY);
+                    doc.text("Email:", leftX, infoY);
                     doc.setFont("helvetica", "normal");
-                    const emailLines = doc.splitTextToSize(String(formDataObj.email || "N/A"), containerWidth - 35);
-                    doc.text(emailLines, leftContentX + 20, leftTextY);
+                    doc.text(String(formDataObj.email || "N/A"), leftX + 30, infoY);
 
-                    leftTextY += 10;
+                    doc.setFont("helvetica", "bold");
+                    doc.text("Horário:", rightX, infoY);
+                    doc.setFont("helvetica", "normal");
+                    doc.text("16h", rightX + 25, infoY);
+
+                    infoY += 10;
 
                     // Telefone
                     doc.setFont("helvetica", "bold");
-                    doc.text("Telefone:", leftContentX, leftTextY);
+                    doc.text("Telefone:", leftX, infoY);
                     doc.setFont("helvetica", "normal");
-                    doc.text(String(formDataObj.telefone || "N/A"), leftContentX + 25, leftTextY);
+                    doc.text(String(formDataObj.telefone || "N/A"), leftX + 30, infoY);
 
-                    leftTextY += 10;
+                    doc.setFont("helvetica", "bold");
+                    doc.text("Local:", rightX, infoY);
+                    doc.setFont("helvetica", "normal");
+                    doc.text("Espaço Jardim das Flores", rightX + 25, infoY);
+
+                    infoY += 10;
 
                     // Acompanhantes
                     doc.setFont("helvetica", "bold");
-                    doc.text("Acompanhantes:", leftContentX, leftTextY);
+                    doc.text("Acompanhantes:", leftX, infoY);
                     doc.setFont("helvetica", "normal");
                     const acompText = formDataObj.acompanhantes === "0" ? "Apenas eu" : `${formDataObj.acompanhantes || '0'} pessoa(s)`;
-                    doc.text(acompText, leftContentX + 35, leftTextY);
+                    doc.text(acompText, leftX + 35, infoY);
 
-                    // Mensagem (se houver)
+                    doc.setFont("helvetica", "bold");
+                    doc.text("Endereço:", rightX, infoY);
+                    doc.setFont("helvetica", "normal");
+                    doc.text("Rua das Flores, 123 - Jardim Primavera", rightX + 30, infoY);
+
+                    infoY += 12;
+
+                    // Mensagem
                     if (formDataObj.mensagem && formDataObj.mensagem.trim() !== "") {
-                        leftTextY += 8;
-
-                        // Linha divisória
-                        doc.setDrawColor(...textLight);
-                        doc.setLineWidth(0.3);
-                        doc.line(leftContentX, leftTextY, leftContainerX + containerWidth - 8, leftTextY);
-
-                        leftTextY += 6;
                         doc.setFont("helvetica", "bold");
                         doc.setTextColor(...roseDark);
-                        doc.text("Mensagem:", leftContentX, leftTextY);
+                        doc.text("Mensagem:", leftX, infoY);
 
-                        leftTextY += 6;
+                        infoY += 6;
                         doc.setFontSize(7);
                         doc.setFont("helvetica", "normal");
                         doc.setTextColor(...textColor);
-                        const msgLines = doc.splitTextToSize(String(formDataObj.mensagem), containerWidth - 16);
-                        doc.text(msgLines, leftContentX, leftTextY);
+                        const msgLines = doc.splitTextToSize(String(formDataObj.mensagem), pageWidth - margin * 2);
+                        doc.text(msgLines, leftX + 10, infoY);
                     }
 
-                    // CONTAINER DIREITO - DETALHES DO EVENTO (Rosa pastel)
-                    doc.setFillColor(...rosePastel);
-                    doc.setDrawColor(...roseDark);
-                    doc.setLineWidth(0.5); // Borda mais fina
-                    doc.roundedRect(rightContainerX, containerY, containerWidth, containerHeight, 5, 5, "FD");
-
-                    let rightTextY = containerY + 10;
-                    doc.setFontSize(10);
-                    doc.setTextColor(...textColor);
-                    doc.setFont("helvetica", "bold");
-                    doc.text("DETALHES DO EVENTO", rightContainerX + (containerWidth / 2), rightTextY, { align: "center" });
-
-                    rightTextY += 12;
-
-                    // Dados do evento
-                    const rightContentX = rightContainerX + 8;
-                    doc.setFontSize(8);
-                    doc.setTextColor(...textColor);
-
-                    // Data
-                    doc.setFont("helvetica", "bold");
-                    doc.text("Data:", rightContentX, rightTextY);
-                    doc.setFont("helvetica", "normal");
-                    doc.text("20/07/2025", rightContentX + 20, rightTextY);
-
-                    rightTextY += 10;
-
-                    // Horário
-                    doc.setFont("helvetica", "bold");
-                    doc.text("Horário:", rightContentX, rightTextY);
-                    doc.setFont("helvetica", "normal");
-                    doc.text("16h", rightContentX + 25, rightTextY);
-
-                    rightTextY += 10;
-
-                    // Local
-                    doc.setFont("helvetica", "bold");
-                    doc.text("Local:", rightContentX, rightTextY);
-                    doc.setFont("helvetica", "normal");
-                    const localLines = doc.splitTextToSize("Espaço Jardim das Flores", containerWidth - 25);
-                    doc.text(localLines, rightContentX + 20, rightTextY);
-
-                    rightTextY += 10;
-
-                    // Endereço
-                    doc.setFont("helvetica", "bold");
-                    doc.text("Endereço:", rightContentX, rightTextY);
-                    doc.setFont("helvetica", "normal");
-                    const addressLines = doc.splitTextToSize("Rua das Flores, 123 - Jardim Primavera", containerWidth - 30);
-                    doc.text(addressLines, rightContentX + 28, rightTextY);
-
-                    currentY = containerY + containerHeight + 20;
-
-                    // RODAPÉ ELEGANTE
+                    // Rodapé
                     const footerY = pageHeight - 20;
-
-                    // Linha decorativa
                     doc.setDrawColor(...rosePastel);
                     doc.setLineWidth(0.8);
                     doc.line(margin + 40, footerY - 6, pageWidth - margin - 40, footerY - 6);
@@ -1221,6 +1152,7 @@
                     throw error;
                 }
             }
+
 
             const rsvpForm = document.getElementById("rsvp-form");
             const thankYouMessageContainer = document.getElementById("thank-you-message");
