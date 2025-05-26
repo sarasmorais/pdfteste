@@ -1016,11 +1016,11 @@ async function generatePDF(formDataObj) {
 
         currentY += 30;
 
-        // Nomes dos noivos em uma só linha
+        // Nomes dos noivos lado a lado com menor espaçamento
         doc.setFontSize(24);
-        doc.setTextColor(...textColor);
         doc.setFont("times", "normal");
-        doc.text("Lívia ", centerX - 20, currentY, { align: "right" });
+        doc.setTextColor(...textColor);
+        doc.text("Lívia", centerX - 12, currentY, { align: "right" });
 
         doc.setFont("times", "italic");
         doc.setTextColor(...roseDark);
@@ -1028,7 +1028,7 @@ async function generatePDF(formDataObj) {
 
         doc.setFont("times", "normal");
         doc.setTextColor(...textColor);
-        doc.text(" Mateus", centerX + 20, currentY, { align: "left" });
+        doc.text("Mateus", centerX + 12, currentY, { align: "left" });
 
         currentY += 15;
 
@@ -1039,9 +1039,9 @@ async function generatePDF(formDataObj) {
 
         currentY += 20;
 
-        // POSICIONAMENTO EM DUAS COLUNAS
+        // POSICIONAMENTO DAS COLUNAS MAIS PRÓXIMO
         const leftX = margin;
-        const rightX = pageWidth / 2 + 5;
+        const rightX = pageWidth / 2; // antes era +5
         let infoY = currentY;
 
         doc.setFontSize(10);
@@ -1054,7 +1054,6 @@ async function generatePDF(formDataObj) {
         doc.setFontSize(8);
         doc.setFont("helvetica", "normal");
 
-        // Função auxiliar para cada lado
         function writeField(x, y, label, value) {
             doc.setFont("helvetica", "bold");
             doc.setTextColor(...textColor);
@@ -1064,7 +1063,7 @@ async function generatePDF(formDataObj) {
             doc.text(String(value), x + labelWidth + 2, y);
         }
 
-        // ESQUERDA – DADOS DO CONVIDADO
+        // Coluna da esquerda
         writeField(leftX, infoY, "Nome:", formDataObj.nome || "N/A");
         writeField(rightX, infoY, "Data:", "20/07/2025");
         infoY += 10;
@@ -1083,7 +1082,6 @@ async function generatePDF(formDataObj) {
 
         infoY += 15;
 
-        // MENSAGEM (opcional)
         if (formDataObj.mensagem && formDataObj.mensagem.trim() !== "") {
             doc.setFont("helvetica", "bold");
             doc.setTextColor(...roseDark);
@@ -1113,7 +1111,6 @@ async function generatePDF(formDataObj) {
         doc.setFont("helvetica", "normal");
         doc.text("20 de Julho de 2025", centerX, footerY + 6, { align: "center" });
 
-        // Gerar arquivo
         const safeGuestName = String(formDataObj.nome || "Convidado").replace(/[^\w\sÀ-ú]/gi, '').replace(/\s+/g, "_");
         const fileName = `Convite_Casamento_Julia_Pedro_${safeGuestName}.pdf`;
         doc.save(fileName);
@@ -1125,7 +1122,6 @@ async function generatePDF(formDataObj) {
         throw error;
     }
 }
-
 
             const rsvpForm = document.getElementById("rsvp-form");
             const thankYouMessageContainer = document.getElementById("thank-you-message");
