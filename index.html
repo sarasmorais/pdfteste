@@ -994,7 +994,9 @@ async function generatePDF(formDataObj) {
 
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
-        const margin = 15;
+
+        const rem = 16;
+        const margin = rem * 2; // 2rem = 32pt
         const centerX = pageWidth / 2;
 
         // Fundo
@@ -1016,7 +1018,7 @@ async function generatePDF(formDataObj) {
 
         currentY += 30;
 
-        // Nomes dos noivos lado a lado com menor espaçamento
+        // Nomes dos noivos lado a lado com espaçamento menor
         doc.setFontSize(24);
         doc.setFont("times", "normal");
         doc.setTextColor(...textColor);
@@ -1039,9 +1041,9 @@ async function generatePDF(formDataObj) {
 
         currentY += 20;
 
-        // POSICIONAMENTO DAS COLUNAS MAIS PRÓXIMO
+        // POSICIONAMENTO DAS COLUNAS COM BASE NA MARGEM DE 2rem
         const leftX = margin;
-        const rightX = pageWidth / 2; // antes era +5
+        const rightX = pageWidth - margin - ((pageWidth - 2 * margin) / 2); // colunas mais próximas ao centro
         let infoY = currentY;
 
         doc.setFontSize(10);
@@ -1063,7 +1065,6 @@ async function generatePDF(formDataObj) {
             doc.text(String(value), x + labelWidth + 2, y);
         }
 
-        // Coluna da esquerda
         writeField(leftX, infoY, "Nome:", formDataObj.nome || "N/A");
         writeField(rightX, infoY, "Data:", "20/07/2025");
         infoY += 10;
@@ -1082,6 +1083,7 @@ async function generatePDF(formDataObj) {
 
         infoY += 15;
 
+        // Mensagem (se houver)
         if (formDataObj.mensagem && formDataObj.mensagem.trim() !== "") {
             doc.setFont("helvetica", "bold");
             doc.setTextColor(...roseDark);
@@ -1122,6 +1124,7 @@ async function generatePDF(formDataObj) {
         throw error;
     }
 }
+
 
             const rsvpForm = document.getElementById("rsvp-form");
             const thankYouMessageContainer = document.getElementById("thank-you-message");
