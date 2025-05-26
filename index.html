@@ -1009,12 +1009,12 @@ async function generatePDF(formDataObj) {
 doc.setFontSize(7);
 doc.setTextColor(...textLight);
 doc.setFont("helvetica", "normal");
-doc.text("CONFIRMAÇÃO DE PRESENÇA RECEBIDA", margin, currentY); // Alinhado à esquerda
+doc.text("CONFIRMAÇÃO DE PRESENÇA RECEBIDA", centerX, currentY, { align: "center" });doc.text("CONFIRMAÇÃO DE PRESENÇA RECEBIDA", centerX, currentY, { align: "center" });
 
 currentY += 12;
 doc.setFontSize(9);
 doc.setFont("helvetica", "italic");
-doc.text("Obrigado por confirmar sua presença em nosso grande dia", margin, currentY); // 
+doc.text("Obrigado por confirmar sua presença em nosso grande dia", centerX, currentY, { align: "center" });
 
         currentY += 30;
 
